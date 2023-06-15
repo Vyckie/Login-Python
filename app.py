@@ -1,15 +1,61 @@
 import customtkinter as ctk
 from tkinter import *
+import sqlite3
 
+
+class BackEnd():
+    def conectar_db(self):
+        self.conn = sqlite3.connect("YourFinances.db")
+        self.cursor = self.conn.cursor()
+        print("DB CONECTADO COM SUCESSO")
+        
+    def desconectar_db(self):
+        self.conn.close()
+        print("DB DESCONECTADO COM SUCESSO")
+        
+    def criar_tb(self):
+        self.conectar_db()
+        self.cursor.execute(""" 
+            CREATE TABLE IF NOT EXISTS Usuarios(
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Nome TEXT NOT NULL,
+                Cpf TEXT NOT NULL,
+                Email TEXT NOT NULL,
+                Senha TEXT NOT NULL,
+                ConfirmaSenha TEXT NOT NULL
+            );
+        """)
+        self.conn.commit()
+        print("TABELA CRIADA COM SUCESSO")
+        self.desconectar_db()
+    
+    def cadastrarUsuario(self):
+        self.nomeCadastro = self.nomeCadastro.get()
+        self.cpfCadastro = self.cpfCadastro.get()
+        self.emailCadastro = self.emailCadastro.get()
+        self.senhaCadastro = self.senhaCadastro.get()
+        self.senhaConfirmacao = self.senhaConfirmacao.get()
+        
+        self.conectar_db()
+        
+        self.cursor.execute("""
+            INSERT INTO Usuarios (Nome, Cpf, Email, Senha, ConfirmaSenha)
+            VALUES(?,?,?,?,?)""", (self.nomeCadastro, self.cpfCadastro, self.emailCadastro, self.senhaCadastro, self.senhaConfirmacao))
+        
+        self.conn.commit()
+        print("USUARIO CADASTRADO COM SUCESSO")
+        
+        self.desconectar_db()
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("green")
 
-class App(ctk.CTk):
+class App(ctk.CTk, BackEnd):
     def __init__(self):
         super().__init__()
         self.configuracoesJanelaInicial()
         self.telaLogin()
+        self.criar_tb()
         
     def configuracoesJanelaInicial(self):
         self.geometry("700x400")
@@ -74,6 +120,7 @@ class App(ctk.CTk):
         self.botaoCadastrar.grid(row=6, column=0, padx=10, pady=10)
         
     def voltarTelaLogin(self):
+        self.cadastrarUsuario()
         self.frameCadastro.place_forget()
         self.telaLogin()
 
