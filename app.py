@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from tkinter import *
 import sqlite3
+from tkinter import messagebox
+
 
 
 class BackEnd():
@@ -41,6 +43,29 @@ class BackEnd():
         self.cursor.execute("""
             INSERT INTO Usuarios (Nome, Cpf, Email, Senha, ConfirmaSenha)
             VALUES(?,?,?,?,?)""", (self.nomeCadastro, self.cpfCadastro, self.emailCadastro, self.senhaCadastro, self.senhaConfirmacao))
+        
+        try:
+            if (self.nomeCadastro == "" or self.cpfCadastro == "" or self.emailCadastro == "" or self.senhaCadastro == "" or self.senhaConfirmacao == ""):
+                messagebox.showerror(title="Your Finances", message="ERROR! PREENCHA TODOS DO CAMPOS")
+            elif (len(self.nomeCadastro) < 8):
+                messagebox.showerror(title="Your Finances", message="ERROR! PREENCHA COM NOME COMPLETO")
+            elif (len(self.nomeCadastro) < 11):
+                messagebox.showerror(title="Your Finances", message="ERROR! PREENCHA COM CPF COMPLETO")
+            elif (len(self.senhaCadastro) < 6):
+                messagebox.showerror(title="Your Finances", message="ERROR! PREENCHA SENHA COM PELO MENOS 6 DIGITOS")
+            elif(self.senhaCadastro != self.senhaConfirmacao):
+                messagebox.showerror(title="Your Finances", message="ERROR! SENHA INCORRETA")
+            else:
+                self.conn.commit()
+                messagebox.showerror(title="Your Finances", message=f"{self.nomeCadastro} cadastro efetuado!")
+                print("USUARIO CADASTRADO COM SUCESSO")
+        
+                self.desconectar_db()
+                
+                self.frameCadastro.place_forget()
+                self.telaLogin()
+        except:
+            messagebox.showerror(title="Your Finances", message="ERROR AO CADASTRAR\nTENTE NOVAMENTE")
         
         self.conn.commit()
         print("USUARIO CADASTRADO COM SUCESSO")
@@ -116,13 +141,10 @@ class App(ctk.CTk, BackEnd):
         self.senhaConfirmacao = ctk.CTkEntry(self.frameCadastro, width=300, placeholder_text="Digite sua senha novamente", show="*")
         self.senhaConfirmacao.grid(row=5, column=0, padx=10, pady=10)
         
-        self.botaoCadastrar=ctk.CTkButton(self.frameCadastro, width=300, text="Cadastrar".upper(), font=("Century Gothic", 12, "bold"), command=self.voltarTelaLogin)
+        self.botaoCadastrar=ctk.CTkButton(self.frameCadastro, width=300, text="Cadastrar".upper(), font=("Century Gothic", 12, "bold"), command=self.cadastrarUsuario)
         self.botaoCadastrar.grid(row=6, column=0, padx=10, pady=10)
         
-    def voltarTelaLogin(self):
-        self.cadastrarUsuario()
-        self.frameCadastro.place_forget()
-        self.telaLogin()
+    
 
     
         
