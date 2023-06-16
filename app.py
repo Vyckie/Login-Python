@@ -32,6 +32,8 @@ class BackEnd():
         self.desconectar_db()
     
     def cadastrarUsuario(self):
+    
+    
         self.nomeCadastro = self.nomeCadastro.get()
         self.cpfCadastro = self.cpfCadastro.get()
         self.emailCadastro = self.emailCadastro.get()
@@ -46,7 +48,7 @@ class BackEnd():
         
         try:
             if (self.nomeCadastro == "" or self.cpfCadastro == "" or self.emailCadastro == "" or self.senhaCadastro == "" or self.senhaConfirmacao == ""):
-                messagebox.showerror(title="Your Finances", message="ERROR! PREENCHA TODOS DO CAMPOS")
+                messagebox.showerror(title="Your Finances", message="ERROR! PREENCHA TODOS OS CAMPOS")
             elif (len(self.nomeCadastro) < 8):
                 messagebox.showerror(title="Your Finances", message="ERROR! PREENCHA COM NOME COMPLETO")
             elif (len(self.nomeCadastro) < 11):
@@ -66,11 +68,30 @@ class BackEnd():
                 self.telaLogin()
         except:
             messagebox.showerror(title="Your Finances", message="ERROR AO CADASTRAR\nTENTE NOVAMENTE")
+            self.desconectar_db()
+            
+    def verificarLogin(self):
+        self.emailLogin = self.emailLogin.get()
+        self.senhaLogin = self.senhaLogin.get()
         
-        self.conn.commit()
-        print("USUARIO CADASTRADO COM SUCESSO")
+        self.conectar_db()
         
-        self.desconectar_db()
+        self.cursor.execute("""
+            SELECT * FROM Usuarios WHERE (Email = ? AND Senha = ?)
+        """, (self.emailLogin, self.senhaLogin))
+        
+        self.verficaDados = self.cursor.fetchone()
+        
+        try:
+            if(self.emailLogin == "" or self.senhaLogin == ""):
+                messagebox.showinfo(title="Your Finances", message="PREENCHA TODO OS CAMPOS")     
+            elif(self.emailLogin in self.verficaDados and self.senhaLogin in self.verficaDados):
+                messagebox.showinfo(title="Your Finances", message="LOGADO COM SUCESSO")            
+        except:
+            messagebox.showinfo(title="Your Finances", message="ERROR! TENTE NOVAMENTE")
+            self.desconectar_db
+        
+        
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("green")
@@ -111,7 +132,7 @@ class App(ctk.CTk, BackEnd):
         self.checkboxLogin = ctk.CTkCheckBox(self.frameLogin, text="Manter conectado", checkbox_width=10, checkbox_height=10, corner_radius=20)
         self.checkboxLogin.grid(row=3, column=0, padx=0, pady=20)
         
-        self.botaoLogin=ctk.CTkButton(self.frameLogin, width=300, fg_color="#F5F5F5", text_color="#7FC793", text="Logar".upper(), font=("Century Gothic", 12, "bold"))
+        self.botaoLogin=ctk.CTkButton(self.frameLogin, width=300, fg_color="#F5F5F5", text_color="#7FC793", text="Logar".upper(), font=("Century Gothic", 12, "bold"), command=self.verificarLogin)
         self.botaoLogin.grid(row=4, column=0, padx=10, pady=10)
         
         self.botaoCadastro=ctk.CTkButton(self.frameLogin, width=300, text="Cadastre-se".upper(), font=("Century Gothic", 12, "bold"), command=self.telaCadastro)
